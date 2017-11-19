@@ -1,3 +1,4 @@
+#include "ftebr.h"
 #include "lfstack.h"
 
 #include <assert.h>
@@ -19,6 +20,8 @@ job(void* arg)
 {
     job_arg_t job_arg = *(job_arg_t*)arg;
     lfstack_t* stack = job_arg.stack;
+
+    ftebr_register();
 
     for (uint64_t i = 0; i < job_arg.loop_num; i++) {
         uint64_t value = atomic_fetch_add(job_arg.counter, 1);
@@ -75,8 +78,8 @@ free_globals(bool* a, lfstack_t* stack)
 
 int main(void)
 {
-    uint64_t thread_num = 8;
-    uintptr_t total_job = 1000000;
+    uint64_t thread_num = 4;
+    uintptr_t total_job = 16388;
     bool* a;
     lfstack_t* stack;
     pthread_t thread[thread_num];
@@ -86,13 +89,15 @@ int main(void)
 
     job_arg = setup_job_arg(total_job, thread_num, stack, a);
 
+    puts("start");
     for (uint64_t i = 0; i < thread_num; i++) {
         pthread_create(&thread[i], NULL, job, job_arg);
     }
     for (uint64_t i = 0; i < thread_num; i++) {
         pthread_join(thread[i], NULL);
     }
-    verify_job(a, total_job);
+    puts("done");
+    assert(verify_job(a, total_job));
 
     free_globals(a, stack);
 
