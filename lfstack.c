@@ -28,8 +28,6 @@ lfstack_push(lfstack_t* stack, void* value)
     lfstack_node_t* old_top;
     lfstack_node_t* new_node = lfstack_node_new(value);
 
-    if ((int)value % 1000 == 0)
-        printf("thread %lu: lfstack_push(%d)\n", pthread_self(), (int)value);
     ftebr_enter();
     do {
         old_top = atomic_load(&stack->top);
